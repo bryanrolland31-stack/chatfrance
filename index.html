@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<title>Chat France</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,Arial,sans-serif;background:#FFF7F0;color:#2A211C}
+.screen{position:fixed;inset:0;display:none;flex-direction:column;overflow-y:auto}
+.screen.on{display:flex}
+#splash{align-items:center;justify-content:center;text-align:center;padding:30px;background:linear-gradient(160deg,#FFD9C7,#FFF7F0,#DFF6F2)}
+#splash .flag{font-size:80px}
+#splash h1{font-size:36px;margin:16px 0 8px}
+#splash h1 span{color:#FF6B5B}
+#splash p{color:#9A8B81;font-size:14px;margin-bottom:24px;max-width:300px;line-height:1.5}
+.btn{background:linear-gradient(135deg,#FF6B5B,#FF8A6B);color:#fff;border:none;border-radius:99px;padding:16px;font-size:15.5px;font-weight:700;cursor:pointer;font-family:inherit;display:block;width:100%;margin-bottom:10px}
+.btn:active{transform:scale(.96)}
+.btn2{background:#fff;color:#FF6B5B;border:2px solid #FF6B5B}
+#signup,#login{padding:26px 22px}
+h2{font-size:26px;margin-bottom:6px}
+.sub{color:#9A8B81;font-size:13px;margin-bottom:16px}
+label{display:block;font-size:11px;font-weight:700;text-transform:uppercase;color:#9A8B81;margin:14px 0 7px;letter-spacing:.8px}
+input,select,textarea{width:100%;border:1.5px solid #F1E5DA;background:#fff;border-radius:14px;padding:14px;font-size:15px;outline:none;font-family:inherit;color:#2A211C}
+input:focus,select:focus{border-color:#FF6B5B}
+textarea{resize:none;height:70px}
+.ville-results{max-height:200px;overflow-y:auto;margin-top:8px;border-radius:14px;background:#fff;border:1.5px solid #F1E5DA;display:none}
+.ville-results.on{display:block}
+.ville-item{padding:11px 14px;border-bottom:1px solid #F7F0E9;cursor:pointer;display:flex;align-items:center;gap:10px}
+.ville-item:active{background:#FFF0EC}
+.ville-item .cp{font-size:11px;font-weight:800;color:#9A8B81;background:#F3EAE3;padding:3px 7px;border-radius:6px}
+.ville-item .nm{font-size:13.5px;font-weight:700;flex:1}
+.ville-item .rg{font-size:11px;color:#9A8B81}
+.ville-selected{background:#FFF0EC;border-radius:14px;padding:12px;margin-top:10px;border:1.5px solid #FFD9C7;display:none}
+.ville-selected.on{display:block}
+.ville-selected .lbl{font-size:10px;font-weight:800;text-transform:uppercase;color:#FF6B5B}
+.ville-selected .val{font-size:14px;font-weight:700;margin-top:3px}
+.ville-selected .info{font-size:11px;color:#9A8B81;margin-top:2px}
+#app{padding:0}
+.top{background:#fff;padding:12px 16px;border-bottom:1px solid #F1E5DA;display:flex;justify-content:space-between;align-items:center}
+.top .brand{font-size:17px;font-weight:800}
+.top .brand em{font-style:normal;color:#FF6B5B}
+.top .right{display:flex;align-items:center;gap:10px}
+#count{font-size:11px;background:#DCFCE7;color:#22C55E;padding:5px 11px;border-radius:99px;font-weight:800}
+.me-av{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;font-size:16px;color:#fff;cursor:pointer;overflow:hidden;background:#FF6B5B}
+.av{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;font-size:20px;color:#fff;flex-shrink:0;overflow:hidden;position:relative}
+.av .status{position:absolute;bottom:0;right:0;width:12px;height:12px;border-radius:50%;border:2px solid #fff;background:#22C55E}
+.av.femme{background:linear-gradient(135deg,#FFB3CE,#FF6BA0)}
+.av.homme{background:linear-gradient(135deg,#A3C6FF,#3D8BFD)}
+.av.trans{background:linear-gradient(135deg,#D6B3FF,#A855F7)}
+.av.couple{background:linear-gradient(135deg,#FFC98A,#FF8C00)}
+.tabs{display:flex;background:#fff;border-bottom:1px solid #F1E5DA}
+.tab{flex:1;padding:12px 6px;text-align:center;font-size:12.5px;font-weight:700;color:#9A8B81;cursor:pointer;border-bottom:3px solid transparent;font-family:inherit}
+.tab.on{color:#FF6B5B;border-bottom-color:#FF6B5B}
+.view{flex:1;overflow-y:auto;padding:6px 0;display:none}
+.view.on{display:block}
+.section-title{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:#9A8B81;padding:14px 18px 8px}
+.salon{display:flex;align-items:center;gap:14px;padding:14px 18px;cursor:pointer;border-bottom:1px solid #F7F0E9}
+.salon:active{background:#FFF7F0}
+.salon .ico{width:52px;height:52px;border-radius:14px;display:grid;place-items:center;font-size:26px;background:linear-gradient(135deg,#FFE0D0,#FFC9B0);flex-shrink:0}
+.salon .info{flex:1}
+.salon .info b{display:block;font-size:15px;margin-bottom:3px}
+.salon .info small{font-size:12px;color:#9A8B81;display:block}
+.user{display:flex;align-items:center;gap:12px;padding:12px 18px;cursor:pointer;border-bottom:1px solid #F7F0E9}
+.user:active{background:#FFF7F0}
+.info{flex:1;min-width:0}
+.info b{display:block;font-size:15px;margin-bottom:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.info small{font-size:12px;color:#9A8B81;display:block}
+.c-femme{color:#FF4D94}.c-homme{color:#3D8BFD}.c-trans{color:#A855F7}.c-couple{color:#FF8C00}
+#chat{padding:0}
+.head{background:#fff;padding:12px 14px;border-bottom:1px solid #F1E5DA;display:flex;align-items:center;gap:12px}
+.back{background:none;border:none;font-size:26px;cursor:pointer;padding:0 8px;color:#2A211C}
+.head .av{width:42px;height:42px;font-size:19px}
+.head .title{flex:1}
+.head .title b{font-size:14.5px;display:block}
+.head .title small{font-size:11px;color:#9A8B81}
+.head .actions button{background:#F3EAE3;border:none;width:36px;height:36px;border-radius:50%;cursor:pointer;font-size:15px}
+#msgs{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:8px}
+.msg{max-width:78%;padding:11px 15px;border-radius:18px;font-size:14.5px;line-height:1.4;word-wrap:break-word}
+.msg .author{font-size:11px;font-weight:800;opacity:.7;display:block;margin-bottom:3px}
+.me{background:linear-gradient(135deg,#FF6B5B,#FF8A6B);color:#fff;align-self:flex-end;border-bottom-right-radius:5px}
+.them{background:#fff;align-self:flex-start;border-bottom-left-radius:5px;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.sys{background:#F3EAE3;color:#9A8B81;font-size:12px;padding:7px 14px;border-radius:99px;align-self:center;text-align:center;max-width:90%}
+.bar{display:flex;gap:8px;padding:10px 14px;background:#fff;border-top:1px solid #F1E5DA}
+.bar input{flex:1;border-radius:99px;background:#FFF7F0;padding:13px 18px}
+.send{background:linear-gradient(135deg,#FF6B5B,#FF8A6B);color:#fff;border:none;border-radius:50%;width:46px;height:46px;font-size:17px;cursor:pointer;flex-shrink:0}
+.modal{background:#fff;border-radius:26px;padding:22px 20px;text-align:center;width:92%;max-width:400px;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:100;display:none;max-height:88vh;overflow-y:auto}
+.modal.on{display:block}
+.modal-bg{position:fixed;inset:0;background:rgba(30,18,12,.7);z-index:99;display:none}
+.modal-bg.on{display:block}
+.modal h3{margin:0 0 8px;font-size:22px}
+.modal .av-big{width:96px;height:96px;border-radius:50%;margin:0 auto 12px;display:grid;place-items:center;font-size:42px;overflow:hidden;color:#fff;background:#FF6B5B}
+.stats{display:flex;gap:10px;margin:14px 0}
+.stat{flex:1;background:#FFF7F0;border-radius:14px;padding:12px;text-align:center}
+.stat b{display:block;font-size:20px;color:#FF6B5B}
+.stat small{font-size:10.5px;color:#9A8B81;font-weight:700}
+.report-opt{display:block;padding:12px;border:1.5px solid #F1E5DA;border-radius:12px;margin-bottom:8px;cursor:pointer;font-size:13.5px;text-align:left;font-family:inherit;background:#fff;width:100%;color:#2A211C}
+#toasts{position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:9999;display:flex;flex-direction:column;gap:6px;pointer-events:none;width:90%;max-width:340px}
+.toast{background:rgba(42,33,28,.96);color:#fff;padding:11px 16px;border-radius:14px;font-size:13px;font-weight:600;text-align:center}
+</style>
+</head>
+<body>
+<div id="toasts"></div>
+
+<div id="splash" class="screen on">
+<div class="flag">🇫🇷</div>
+<h1>Chat <span>France</span></h1>
+<p>Salons thématiques, chat en direct</p>
+<button class="btn" onclick="show('signup')">Créer un compte</button>
+<button class="btn btn2" onclick="show('login')">J'ai déjà un compte</button>
+</div>
+
+<div id="signup" class="screen">
+<h2>Créer un compte 🇫🇷</h2>
+<p class="sub">Rejoins la communauté</p>
+<label>Pseudo</label>
+<input id="s-pseudo" placeholder="Ex : Alex75" maxlength="20">
+<label>Mot de passe (min 4)</label>
+<input id="s-pass" type="password" placeholder="Mot de passe">
+<label>Âge</label>
+<input id="s-age" type="number" placeholder="26" min="18" max="99">
+<label>Je suis</label>
+<select id="s-genre">
+<option value="">-- Choisis --</option>
+<option value="femme">🌸 Femme</option>
+<option value="homme">💙 Homme</option>
+<option value="trans">💜 Trans</option>
+<option value="couple">🧡 En couple</option>
+</select>
+<label>Ville ou code postal</label>
+<input id="s-ville" placeholder="Ex : Lyon ou 69001" oninput="rechercheVille(this.value)">
+<div class="ville-results" id="villeResults"></div>
+<div class="ville-selected" id="villeSelected">
+<div class="lbl">Localisation choisie</div>
+<div class="val" id="villeVal"></div>
+<div class="info" id="villeInfo"></div>
+</div>
+<br>
+<button class="btn" onclick="creerCompte()">Créer mon compte</button>
+<button class="btn btn2" onclick="show('splash')">Retour</button>
+</div>
+
+<div id="login" class="screen">
+<h2>Connexion 🇫🇷</h2>
+<p class="sub">Content de te revoir</p>
+<label>Pseudo</label>
+<input id="l-pseudo" placeholder="Pseudo">
+<label>Mot de passe</label>
+<input id="l-pass" type="password" placeholder="Mot de passe">
+<br>
+<button class="btn" onclick="connexion()">Se connecter</button>
+<button class="btn btn2" onclick="show('splash')">Retour</button>
+</div>
+
+<div id="app" class="screen">
+<div class="top">
+<div class="brand">🇫🇷 Chat<em>France</em></div>
+<div class="right">
+<span id="count">0</span>
+<div class="me-av" id="meAv" onclick="openProfil()">😊</div>
+</div>
+</div>
+<div class="tabs">
+<div class="tab on" onclick="setTab('salons',this)">💬 Salons</div>
+<div class="tab" onclick="setTab('users',this)">👥 Personnes</div>
+</div>
+<div class="view on" id="v-salons">
+<div class="section-title">🌍 Salons thématiques</div>
+<div id="salonsList"></div>
+</div>
+<div class="view" id="v-users">
+<div class="section-title">👥 Personnes en ligne</div>
+<div id="usersList"></div>
+</div>
+</div>
+
+<div id="chat" class="screen">
+<div class="head">
+<button class="back" onclick="show('app')">‹</button>
+<div class="av" id="cav"></div>
+<div class="title"><b id="cname"></b><small id="cinfo"></small></div>
+<div class="actions"><button onclick="reportUser()">🚩</button></div>
+</div>
+<div id="msgs"></div>
+<div class="bar">
+<input id="msg" placeholder="Écris ton message…" onkeydown="if(event.key==='Enter')envoie()">
+<button class="send" onclick="envoie()">➤</button>
+</div>
+</div>
+
+<div class="modal-bg" id="mBg" onclick="closeM()"></div>
+<div class="modal" id="mProfil"></div>
+<div class="modal" id="mSimple"></div>
+
+<script>
+var $=function(i){return document.getElementById(i)};
+var state={me:null,users:{},messages:{},chat:null,chatType:'user',ville:null};
+var SALONS=[
+{id:'voyage',e:'✈️',n:'Voyage & Évasion',d:'Destinations, bons plans'},
+{id:'musique',e:'🎵',n:'Musique',d:'Playlists, concerts'},
+{id:'sport',e:'⚽',n:'Sport & Fitness',d:'Foot, running, muscu'},
+{id:'cine',e:'🎬',n:'Cinéma & Séries',d:'Films, séries, Netflix'},
+{id:'amitie',e:'🤝',n:'Amitié',d:'Trouver des amis'},
+{id:'amour',e:'💕',n:'Amour & Rencontres',d:'Célibataires, flirts'},
+{id:'blagues',e:'😂',n:'Blagues & Humour',d:'Vannes, fous rires'},
+{id:'gaming',e:'🎮',n:'Gaming',d:'Jeux vidéo, consoles'},
+{id:'cuisine',e:'🍳',n:'Cuisine',d:'Recettes, restos'},
+{id:'aide',e:'💡',n:'Aide & Entraide',d:'Questions, conseils'},
+{id:'karaoke',e:'🎤',n:'Karaoké',d:'Chanter, deviner'},
+{id:'soiree',e:'🎉',n:'Soirées & Sorties',d:'Organiser des soirées'}
+];
+var FAKE=[
+{p:"Léa_92",g:"femme",a:24},{p:"Sophie_P",g:"femme",a:27},
+{p:"Chloé75",g:"femme",a:25},{p:"Marine_L",g:"femme",a:29},
+{p:"Emma",g:"femme",a:23},{p:"Lucas_13",g:"homme",a:26},
+{p:"ThomasD",g:"homme",a:28},{p:"Maxime75",g:"homme",a:25},
+{p:"Antoine_L",g:"homme",a:31},{p:"Hugo_L",g:"homme",a:24},
+{p:"Alexia_T",g:"trans",a:26},{p:"Luna_TG",g:"trans",a:28},
+{p:"Camille_T",g:"trans",a:25},{p:"Marc_et_Julie",g:"couple",a:32},
+{p:"Alex_et_Sam",g:"couple",a:29},{p:"Tom_et_Léa",g:"couple",a:27}
+];
+var ICO={femme:"🌸",homme:"💙",trans:"💜",couple:"🧡"};
+var LBL={femme:"Femme",homme:"Homme",trans:"Trans",couple:"En couple"};
+var CLS={femme:"c-femme",homme:"c-homme",trans:"c-trans",couple:"c-couple"};
+var REP={
+bonjour:["Salut ! 😊 Comment tu vas ?","Hey ! Ça fait plaisir","Coucou ! Tu vas bien ?","Hello ! Quoi de neuf ?"],
+cava:["Ça va bien ! Et toi ?","Super ! Et toi ?","Tranquille 😌","Nickel !"],
+age:["J'ai {a} ans 😊 Et toi ?","{a} ans ! Et toi ?"],
+ville:["Je suis de {v} 📍 Et toi ?","J'habite à {v} !","De {v} ! Tu es d'où ?"],
+musique:["J'écoute du rap 🎤","Plutôt pop 😊","Rock ! Et toi ?"],
+sport:["Le foot ⚽ Et toi ?","Je cours 🏃","La muscu 💪"],
+voyage:["Mon rêve : le Japon ✈️","L'Espagne ! 🌞","Italie 🇮🇹"],
+cine:["Les films d'action 🎬","Séries Netflix 🎬","Comédies !"],
+cuisine:["J'adore cuisiner 🍳","Italien 🍕","Japonais 🍣"],
+question:["Bonne question 😄 Et toi ?","Aucune idée ! Et toi ?","Hmm difficile 🤔"],
+drole:["Haha 😄","Mdr 😂","Excellent !"],
+compliment:["Merci 😊","Ah merci ! 💛","C'est gentil"],
+oui:["Super ! 😊","Génial !","Cool 😎"],
+non:["Ah mince 😕","Ok pas de souci","Tant pis !"],
+gen:["Ah oui ? 😊","Intéressant !","Raconte-moi plus","Ok ! Et toi ?","Sympa !","Continue 😊","Trop bien !","Sérieux ?"]
+};
+var BAD=["pedophile","pédophile","viol","nazi","hitler","drogue","cocaine","arme","tuer","suicide","porno","sexe","bite","chatte","pute","salope","connard","nique"];
+var lastT=0,msgMin=0,minReset=Date.now();
+function genReply(txt,user){
+var t=(txt||'').toLowerCase();
+var r=REP.gen;
+if(/\b(salut|bonjour|bonsoir|coucou|hey|hello|yo)\b/.test(t))r=REP.bonjour;
+else if(/\b(ça va|ca va|cv)\b/.test(t))r=REP.cava;
+else if(/\b(quel âge|ton âge)\b/.test(t))r=REP.age;
+else if(/\b(tu habites|tu es d'où|ta ville)\b/.test(t))r=REP.ville;
+else if(/\b(musique|chanson|rap|rock)\b/.test(t))r=REP.musique;
+else if(/\b(sport|foot|basket|muscu)\b/.test(t))r=REP.sport;
+else if(/\b(voyage|vacances|pays)\b/.test(t))r=REP.voyage;
+else if(/\b(film|ciné|série|netflix)\b/.test(t))r=REP.cine;
+else if(/\b(cuisine|manger|resto)\b/.test(t))r=REP.cuisine;
+else if(/\?/.test(t))r=REP.question;
+else if(/\b(haha|mdr|lol)\b/.test(t))r=REP.drole;
+else if(/\b(sympa|beau|belle|cool)\b/.test(t))r=REP.compliment;
+else if(/\b(oui|ouais|ok)\b/.test(t))r=REP.oui;
+else if(/\b(non|nan)\b/.test(t))r=REP.non;
+var ph=r[Math.floor(Math.random()*r.length)];
+if(ph.indexOf('{a}')!==-1)ph=ph.replace('{a}',(user&&user.age)||'26');
+if(ph.indexOf('{v}')!==-1)ph=ph.replace('{v}',(user&&user.ville)||'Paris');
+return ph;
+}
+function badMsg(t){t=t.toLowerCase();for(var i=0;i<BAD.length;i++)if(t.indexOf(BAD[i])!==-1)return true;return false}
+function canSend(){var n=Date.now();if(n-lastT<500)return false;if(n-minReset>60000){msgMin=0;minReset=n}if(msgMin>=30)return false;msgMin++;lastT=n;return true}
+var bc=null;try{bc=new BroadcastChannel('chatfrance')}catch(e){}
+function esc(s){return String(s||'').replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function toast(m){var t=document.createElement('div');t.className='toast';t.textContent=m;$('toasts').appendChild(t);setTimeout(function(){t.remove()},3000)}
+function show(id){var all=document.querySelectorAll('.screen');for(var i=0;i<all.length;i++)all[i].classList.remove('on');$(id).classList.add('on')}
+var vt=null;
+function rechercheVille(q){
+clearTimeout(vt);
+var box=$('villeResults');
+q=(q||'').trim();
+if(q.length<2){box.classList.remove('on');box.innerHTML='';return}
+vt=setTimeout(function(){
+fetch('https://geo.api.gouv.fr/communes?nom='+encodeURIComponent(q)+'&fields=nom,code,codesPostaux,departement,region&limit=15')
+.then(function(r){return r.json()})
+.then(function(cities){
+if(!cities||!cities.length){return fetch('https://geo.api.gouv.fr/communes?codePostal='+encodeURIComponent(q)+'&fields=nom,code,codesPostaux,departement,region&limit=15').then(function(r){return r.json()})}
+return cities;
+})
+.then(function(cities){
+if(!cities||!cities.length){box.innerHTML='<div class="ville-item" style="color:#9A8B81">Aucune ville</div>';box.classList.add('on');return}
+var h='';
+for(var i=0;i<cities.length;i++){
+var c=cities[i];
+var cp=(c.codesPostaux&&c.codesPostaux[0])||c.code;
+var dept=(c.departement&&c.departement.nom)||'';
+var region=(c.region&&c.region.nom)||'';
+var data=encodeURIComponent(JSON.stringify({nom:c.nom,cp:cp,dept:dept,region:region}));
+h+='<div class="ville-item" onclick="choisirVille(\''+data+'\')"><span class="cp">'+cp+'</span><div style="flex:1"><div class="nm">'+esc(c.nom)+'</div><div class="rg">'+esc(dept)+(region?' · '+esc(region):'')+'</div></div></div>';
+}
+box.innerHTML=h;
+box.classList.add('on');
+})
+.catch(function(){box.innerHTML='<div class="ville-item" style="color:#FF6B5B">Erreur</div>';box.classList.add('on')});
+},300);
+}
+function choisirVille(encoded){
+var v=JSON.parse(decodeURIComponent(encoded));
+state.ville=v;
+$('s-ville').value=v.nom+' ('+v.cp+')';
+$('villeResults').classList.remove('on');
+$('villeSelected').classList.add('on');
+$('villeVal').textContent=v.nom+' · '+v.cp;
+$('villeInfo').textContent=v.dept+' · '+v.region;
+}
+function save(){
+if(!state.me)return;
+try{
+var acc=JSON.parse(localStorage.getItem('cf_acc')||'{}');
+acc[state.me.pseudo]={pseudo:state.me.pseudo,pass:state.me.pass,age:state.me.age,genre:state.me.genre,ville:state.me.ville||'',cp:state.me.cp||'',region:state.me.region||''};
+localStorage.setItem('cf_acc',JSON.stringify(acc));
+localStorage.setItem('cf_msg_'+state.me.pseudo,JSON.stringify(state.messages));
+localStorage.setItem('cf_session',state.me.pseudo);
+}catch(e){}
+}
+function creerCompte(){
+var p=$('s-pseudo').value.trim();
+var pw=$('s-pass').value;
+var a=parseInt($('s-age').value);
+var g=$('s-genre').value;
+if(p.length<3){alert("Pseudo trop court (3 min)");return}
+if(pw.length<4){alert("Mot de passe trop court (4 min)");return}
+if(!a||a<18||a>99){alert("Âge invalide (18-99)");return}
+if(!g){alert("Choisis ton genre");return}
+if(!state.ville){alert("Choisis ta ville");return}
+var acc=JSON.parse(localStorage.getItem('cf_acc')||'{}');
+if(acc[p]){alert("Ce pseudo est déjà pris");return}
+state.me={id:'u_'+p,pseudo:p,pass:pw,age:a,genre:g,ville:state.ville.nom,cp:state.ville.cp,region:state.ville.region};
+state.messages={};
+loadFakes();
+save();
+renderAll();
+show('app');
+toast("Bienvenue "+p+" 🇫🇷");
+}
+function connexion(){
+var p=$('l-pseudo').value.trim();
+var pw=$('l-pass').value;
+var acc=JSON.parse(localStorage.getItem('cf_acc')||'{}');
+var a=acc[p];
+if(!a){alert("Pseudo inconnu");return}
+if(a.pass!==pw){alert("Mot de passe incorrect");return}
+state.me={id:'u_'+a.pseudo,pseudo:a.pseudo,pass:a.pass,age:a.age,genre:a.genre,ville:a.ville||'',cp:a.cp||'',region:a.region||''};
+state.messages=JSON.parse(localStorage.getItem('cf_msg_'+a.pseudo)||'{}');
+loadFakes();
+renderAll();
+show('app');
+}
+function loadFakes(){
+state.users={};
+for(var i=0;i<FAKE.length;i++){
+var u=FAKE[i];
+state.users['fake_'+i]={id:'fake_'+i,pseudo:u.p,age:u.a,genre:u.g,fake:true};
+}
+if(state.me)state.users[state.me.id]=state.me;
+if(bc)bc.postMessage({type:'hello',data:state.me});
+}
+function setTab(name,el){
+var tabs=document.querySelectorAll('.tab');
+for(var i=0;i<tabs.length;i++)tabs[i].classList.remove('on');
+el.classList.add('on');
+var vs=document.querySelectorAll('.view');
+for(var i=0;i<vs.length;i++)vs[i].classList.remove('on');
+$('v-'+name).classList.add('on');
+}
+function renderAll(){
+if(!state.me)return;
+var g=state.me.genre||'homme';
+$('meAv').className='me-av';
+$('meAv').textContent=ICO[g]||'😊';
+renderSalons();
+renderUsers();
+}
+function renderSalons(){
+var h='';
+for(var i=0;i<SALONS.length;i++){
+var s=SALONS[i];
+h+='<div class="salon" onclick="ouvreSalon(\''+s.id+'\')"><div class="ico">'+s.e+'</div><div class="info"><b>'+s.n+'</b><small>'+s.d+'</small></div></div>';
+}
+$('salonsList').innerHTML=h;
+}
+function renderUsers(){
+var us=Object.values(state.users);
+$('count').textContent=us.length;
+var h='';
+for(var i=0;i<us.length;i++){
+var u=us[i];
+if(state.me&&u.id===state.me.id)continue;
+var g=u.genre||'homme';
+var cls=CLS[g]||'';
+var ico=ICO[g]||'💬';
+h+='<div class="user" onclick="ouvre(\''+u.id+'\')"><div class="av '+g+'">'+ico+'<span class="status"></span></div><div class="info"><b class="'+cls+'">'+esc(u.pseudo)+(u.age?', '+u.age:'')+'</b><small>'+(LBL[g]||'')+'</small></div></div>';
+}
+$('usersList').innerHTML=h;
+}
+function ouvreSalon(id){
+var s=null;
+for(var i=0;i<SALONS.length;i++)if(SALONS[i].id===id)s=SALONS[i];
+if(!s)return;
+state.chat='salon_'+id;
+state.chatType='salon';
+$('cav').className='av homme';
+$('cav').textContent=s.e;
+$('cname').textContent=s.n;
+$('cinfo').textContent='Salon thématique';
+renderMsgs();
+show('chat');
+}
+function ouvre(id){
+var u=state.users[id];
+if(!u||!state.me||id===state.me.id)return;
+state.chat=id;
+state.chatType='user';
+var g=u.genre||'homme';
+$('cav').className='av '+g;
+$('cav').textContent=ICO[g]||'💬';
+$('cname').textContent=u.pseudo+(u.age?', '+u.age:'');
+$('cinfo').textContent=LBL[g]||'';
+renderMsgs();
+show('chat');
+}
+function renderMsgs(){
+var k=state.chat;
+var m=state.messages[k]||[];
+var h='<div class="msg sys">Conversation ouverte</div>';
+for(var i=0;i<m.length;i++){
+var x=m[i];
+var cls=x.from===state.me.id?'me':'them';
+var auth='';
+if(cls==='them'&&state.chatType==='salon'&&x.pseudo)auth='<span class="author">'+esc(x.pseudo)+'</span>';
+h+='<div class="msg '+cls+'">'+auth+esc(x.text)+'</div>';
+}
+$('msgs').innerHTML=h;
+$('msgs').scrollTop=$('msgs').scrollHeight;
+}
+function envoie(){
+var inp=$('msg');
+var t=inp.value.trim();
+if(!t||!state.chat||!state.me)return;
+if(!canSend()){toast("Doucement !");return}
+if(badMsg(t)){toast("⚠️ Message refusé");inp.value='';return}
+var k=state.chat;
+if(!state.messages[k])state.messages[k]=[];
+state.messages[k].push({from:state.me.id,text:t,pseudo:state.me.pseudo});
+save();
+if(state.chatType==='user'&&bc)bc.postMessage({type:'msg',data:{to:state.chat,from:state.me.id,text:t}});
+inp.value='';
+render
